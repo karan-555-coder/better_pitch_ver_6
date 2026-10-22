@@ -81,11 +81,11 @@ function rewrite(body) {
   return s;
 }
 
-// BetterPitch palette (version 5, charcoal & electric lime): every purple/
-// violet/magenta colour in the recorded files (hue 240-335) is moved to lime
-// (hue 76-81). Vivid mid shades become electric lime; dark and muted ones turn
-// charcoal (almost no colour left), and light ones a pale lime cream. Alpha is
-// kept, so only colours change.
+// BetterPitch palette (version 6, graphite & copper): every purple/violet/
+// magenta colour in the recorded files (hue 240-335) is replaced. Vivid mid
+// shades become copper (hue 24-29), dark and muted ones a cool graphite grey,
+// and light ones a warm cream; the three are mixed in RGB since graphite and
+// copper sit far apart on the hue wheel. Alpha is kept, so only colours change.
 // HTML and RSC payloads
 // must keep their byte length (see above), so there a replacement that would be
 // longer is skipped and a shorter one is padded with spaces.
@@ -101,23 +101,24 @@ function rgbOf(h, s, l) {
   const f = n => { const k = (n + h / 30) % 12, a = s * Math.min(l, 1 - l); return Math.round(255 * (l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)))); };
   return [f(0), f(8), f(4)];
 }
+const mix = (p, q, t) => p.map((v, i) => Math.round(v + (q[i] - v) * t));
 function toTheme(r, g, b) {
   const [h, s, l] = hslOf(r, g, b);
   if (h < 240 || h > 335 || s <= .12) return null;
-  // b2 blends towards lime cream as shades get light; v picks lime for vivid
-  // mid shades, everything else (incl. dark vivid ones) stays charcoal/grey
+  // b2 blends towards cream as shades get light; v picks copper for vivid mid
+  // shades, everything else (incl. dark vivid ones) is graphite
   const b2 = Math.min(1, Math.max(0, (l - .7) / .15));
   const v = Math.min(1, Math.max(0, (s - .55) / .2)) * Math.min(1, Math.max(0, (l - .42) / .08));
-  const cs = Math.min(s, .5) * .6;
-  const gs = s * .12 + (cs - s * .12) * b2, gl = l * .4 + (l - l * .4) * b2;
-  const vs = Math.min(.95, s * 1.05) + (cs - Math.min(.95, s * 1.05)) * b2, vl = .5 + (l - .45) * .3 + (l - .5 - (l - .45) * .3) * b2;
-  return rgbOf(76 + (h - 240) * .05, gs + (vs - gs) * v, gl + (vl - gl) * v);
+  const cream = rgbOf(28, Math.min(s, .45) * .5, l);
+  const graphite = mix(rgbOf(220, .08, l * .42), cream, b2);
+  const copper = mix(rgbOf(24 + (h - 240) * .05, Math.min(.62, s * .7), .48 + (l - .45) * .3), cream, b2);
+  return mix(graphite, copper, v);
 }
 const hex2 = n => n.toString(16).padStart(2, '0');
 // Fixed swaps: the ivory page backgrounds become a soft warm grey-white, and
 // the amber and pink-red stops of the heading text gradient (outside the purple
-// hue range) become bright lime and deep olive.
-const FIXED = { fbf9f7: 'f7f7f4', f4f0ec: 'efefea', f5f1ed: 'f0f0eb', f8f5f3: 'f5f5f2', f2c677: 'a3e635', fc1855: '4d7c0f' };
+// hue range) become light and deep copper.
+const FIXED = { fbf9f7: 'f6f5f3', f4f0ec: 'eeece8', f5f1ed: 'efede9', f8f5f3: 'f4f3f0', f2c677: 'e0a77c', fc1855: '9a5a36' };
 
 function recolor(s, type) {
   const exactLength = /text\/html|x-component/.test(type);
@@ -180,10 +181,10 @@ function send(res, entry) {
     // The home page's first section is added the same way (betterpitch/hero.js).
     // Site-wide background glow and motion (betterpitch/theme.css, theme.js),
     // plus scroll-driven motion and pointer interactions on GSAP
-    // (betterpitch/motion.js, interact.js, genz.js).
+    // (betterpitch/motion.js, interact.js).
     body = body.replace('</head>', '<link rel="stylesheet" href="/__bp/theme.css"><script src="/__bp/content.js"></script><script src="/__bp/hero.js"></script><script src="/__bp/theme.js"></script>' +
       '<script src="/__bp/gsap.min.js"></script><script src="/__bp/ScrollTrigger.min.js"></script>' +
-      '<script src="/__bp/motion.js"></script><script src="/__bp/interact.js"></script><script src="/__bp/genz.js"></script></head>');
+      '<script src="/__bp/motion.js"></script><script src="/__bp/interact.js"></script></head>');
   }
   res.writeHead(entry.status, headers);
   res.end(body);
@@ -195,7 +196,7 @@ http.createServer((req, res) => {
   const BP = {
     '/__bp/content.js': 'application/javascript', '/__bp/hero.js': 'application/javascript', '/__bp/hero.css': 'text/css',
     '/__bp/theme.js': 'application/javascript', '/__bp/theme.css': 'text/css', '/__bp/motion.js': 'application/javascript',
-    '/__bp/interact.js': 'application/javascript', '/__bp/genz.js': 'application/javascript',
+    '/__bp/interact.js': 'application/javascript',
   };
   // GSAP comes from node_modules (CSP only allows scripts from this server)
   const GSAP = { '/__bp/gsap.min.js': 1, '/__bp/ScrollTrigger.min.js': 1 };

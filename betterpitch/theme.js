@@ -1,8 +1,7 @@
-// Site-wide state for version 5 (styles in theme.css), injected into every
+// Site-wide state for version 6 (styles in theme.css), injected into every
 // HTML page by server.js:
-//  - soft lime light drifts over dark sections;
-//  - sections rise into view behind a wave, like the tide coming in;
-//  - images open out of a small oval;
+//  - dark sections get a brushed-metal finish;
+//  - headings rise from behind a ledge, images open like venetian blinds;
 //  - the hero's looping animations pause while it is off screen.
 // GSAP motion lives in motion.js and pointer interactions in interact.js.
 // Like content.js it waits for React to hydrate, and it only sets data
@@ -30,32 +29,28 @@
     io.observe(el);
   };
 
-  function caustics() {
+  function metal() {
     for (const el of document.querySelectorAll('main section, main section > div, footer')) {
-      if (el.dataset.bpCaustic !== undefined || el.closest('#bp-hero, [data-bp-caustic]')) continue;
+      if (el.dataset.bpMetal !== undefined || el.closest('#bp-hero, [data-bp-metal]')) continue;
       const cs = getComputedStyle(el), r = el.getBoundingClientRect();
       if (r.width < 400 || r.height < 200 || cs.backgroundImage !== 'none') continue;
       const m = cs.backgroundColor.match(/[\d.]+/g);
       if (!m || (m[3] !== undefined && +m[3] < .9)) continue;
-      if ((.2126 * m[0] + .7152 * m[1] + .0722 * m[2]) / 255 < .4) el.dataset.bpCaustic = '';
+      if ((.2126 * m[0] + .7152 * m[1] + .0722 * m[2]) / 255 < .3) el.dataset.bpMetal = '';
     }
   }
 
-  function tides() {
-    for (const el of document.querySelectorAll('main section, main .bg-white.rounded-2xl.py-16')) {
-      if (el.closest('#bp-hero') || el.parentElement.closest('section, [data-bp-tide]') || !below(el)) continue;
-      if (getComputedStyle(el).maskImage !== 'none') continue;
-      enter(el, 'data-bp-tide', 1400);
+  function ledges() {
+    for (const h of document.querySelectorAll('main h1, main h2')) {
+      if (skip(h) || !below(h) || getComputedStyle(h).clipPath !== 'none') continue;
+      enter(h, 'data-bp-ledge', 1000);
     }
   }
 
-  function irises() {
+  function blinds() {
     for (const img of document.querySelectorAll('main img')) {
-      if (skip(img) || !below(img) || img.getBoundingClientRect().width < 160) continue;
-      const cs = getComputedStyle(img);
-      if (cs.clipPath !== 'none') continue;
-      img.style.setProperty('--bp-r', cs.borderRadius.split(' ')[0] || '0px');
-      enter(img, 'data-bp-iris', 1400);
+      if (skip(img) || !below(img) || img.getBoundingClientRect().width < 160 || getComputedStyle(img).maskImage !== 'none') continue;
+      enter(img, 'data-bp-blinds', 1500);
     }
   }
 
@@ -73,10 +68,10 @@
     if (started) return;
     started = true;
     pauseHero();
-    caustics();
+    metal();
     if (!reduced) {
-      tides();
-      irises();
+      ledges();
+      blinds();
     }
   }
   window.addEventListener('load', () => setTimeout(start, 600));

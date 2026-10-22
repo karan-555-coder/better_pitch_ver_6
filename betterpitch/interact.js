@@ -1,300 +1,115 @@
-// Pointer interactions for version 5 on GSAP (served by server.js from
+// Pointer interactions for version 6 on GSAP (served by server.js from
 // node_modules); styles in theme.css:
-//  - nav links and buttons decode their label when hovered (letters scramble
-//    and lock into place left to right, ending on the original text);
-//  - arrow icons in links and buttons turn to point at the cursor;
-//  - thin elastic strings run along the section edges: the cursor can pull
-//    one and let it go, and it vibrates like a plucked string;
-//  - the bottom-right corner of a card peels up as the cursor nears it;
-//  - images go liquid under a fast-moving cursor and settle when it stops;
-//  - outline buttons fill from the side the cursor came in and empty towards
-//    the side it left.
-// The only new nodes are a click-through canvas for the strings and an empty
-// SVG holding the liquid filter, both appended to <body> outside React's tree.
+//  - the copper sheen on hovered buttons turns to follow the cursor's angle,
+//    like light on brushed metal;
+//  - a click throws copper sparks that arc down under gravity, like a grinder;
+//  - following an internal link wipes a graphite-and-copper panel across the
+//    screen while the next page loads in.
+// The only new nodes are a click-through canvas for the sparks and the wipe
+// panel, both appended to <body> outside React's tree. The canvas is only
+// drawn while sparks are in the air.
 (function () {
   if (!window.gsap) return;
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  if (!matchMedia('(pointer: fine)').matches) return;
   const $$ = (sel, root) => [...(root || document).querySelectorAll(sel)];
-  const skip = el => el.closest('[class*="marquee"], [class*="embla"]');
-  const visible = r => r.width > 0 && r.bottom > 0 && r.top < innerHeight;
-  const mouse = { x: -9999, y: -9999, t: 0, v: 0 };
-  addEventListener('pointermove', e => {
-    if (e.pointerType !== 'mouse') return;
-    const now = performance.now(), dt = Math.max(1, now - mouse.t);
-    mouse.v = Math.hypot(e.clientX - mouse.x, e.clientY - mouse.y) / dt;
-    mouse.x = e.clientX; mouse.y = e.clientY; mouse.t = now;
-  }, { passive: true });
 
-  // label text nodes of an element (short ones only)
-  const labels = el => {
-    const out = [], walk = n => { for (const c of n.childNodes) c.nodeType === 3 ? out.push(c) : walk(c); };
-    walk(el);
-    return out.filter(t => { const s = t.nodeValue.trim(); return s.length >= 2 && s.length <= 30; });
-  };
-
-  function decode() {
-    const LOWER = 'abcdefghijklmnopqrstuvwxyz', UPPER = LOWER.toUpperCase(), DIGIT = '0123456789';
-    const pick = c => {
-      const set = /[a-z]/.test(c) ? LOWER : /[A-Z]/.test(c) ? UPPER : /\d/.test(c) ? DIGIT : null;
-      return set ? set[Math.floor(Math.random() * set.length)] : c;
-    };
-    for (const el of $$('nav a, nav button, a.bg-primary-800, button.bg-primary-800, #bp-hero .bph-btn, [data-bp-dir]')) {
-      if (el._bpDec) continue;
-      const texts = labels(el);
-      if (!texts.length) continue;
-      el._bpDec = true;
-      el.addEventListener('pointerenter', () => {
-        if (el._bpRun) return;
-        el._bpRun = true;
-        const orig = texts.map(t => t.nodeValue), t0 = performance.now(), dur = 520;
-        const step = now => {
-          const p = Math.min(1, (now - t0) / dur);
-          texts.forEach((t, k) => {
-            const s = orig[k], lock = Math.floor(p * s.length);
-            let out = '';
-            for (let i = 0; i < s.length; i++) out += i < lock ? s[i] : pick(s[i]);
-            t.nodeValue = out;
-          });
-          if (p < 1) requestAnimationFrame(step);
-          else { texts.forEach((t, k) => { t.nodeValue = orig[k]; }); el._bpRun = false; }
-        };
-        requestAnimationFrame(step);
+  function sheen() {
+    for (const b of $$('a.bg-primary-800, button.bg-primary-800')) {
+      if (b._bpSh) continue;
+      b._bpSh = true;
+      b.addEventListener('pointermove', e => {
+        const r = b.getBoundingClientRect();
+        const ang = Math.atan2(e.clientY - (r.top + r.height / 2), e.clientX - (r.left + r.width / 2)) * 180 / Math.PI;
+        b.style.setProperty('--bp-ang', (ang + 90).toFixed(0) + 'deg');
       });
     }
   }
 
-  function compass() {
-    const arrows = [];
-    for (const svg of $$('a svg, button svg')) {
-      const host = svg.closest('a, button'), r = svg.getBoundingClientRect();
-      if (svg._bpC || !host.textContent.trim() || r.width < 8 || r.width > 26 || host.closest('nav')) continue;
-      svg._bpC = true;
-      // the hero buttons use a north-east arrow, everything else points east
-      const base = host.closest('#bp-hero') ? -45 : 0;
-      gsap.set(svg, { transformOrigin: '50% 50%' });
-      arrows.push({ svg, base, rot: gsap.quickTo(svg, 'rotation', { duration: .6, ease: 'power3' }), on: false });
-    }
-    let raf = 0;
-    const update = () => {
-      raf = 0;
-      for (const a of arrows) {
-        const r = a.svg.getBoundingClientRect();
-        if (!visible(r)) continue;
-        const cx = r.left + r.width / 2, cy = r.top + r.height / 2, d = Math.hypot(mouse.x - cx, mouse.y - cy);
-        if (d < 260) {
-          let ang = Math.atan2(mouse.y - cy, mouse.x - cx) * 180 / Math.PI - a.base;
-          ang = ((ang + 540) % 360) - 180;
-          a.rot(ang * Math.min(1, (260 - d) / 120));
-          a.on = true;
-        } else if (a.on) { a.rot(0); a.on = false; }
-      }
-    };
-    addEventListener('pointermove', () => { if (!raf) raf = requestAnimationFrame(update); }, { passive: true });
-  }
-
-  function strings() {
+  function sparks() {
     const cv = document.createElement('canvas');
-    cv.className = 'bp-strings';
+    cv.className = 'bp-sparks';
     document.body.appendChild(cv);
     const ctx = cv.getContext('2d');
     let dpr = 1;
     const size = () => { dpr = Math.min(2, devicePixelRatio || 1); cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; };
     size();
     addEventListener('resize', size);
-    // a string along the top edge of each section after the first, the footer,
-    // and the bottom edge of the hero box
-    const edges = $$('main section').filter((s, i) => i > 0 && !s.parentElement.closest('section') && s.getBoundingClientRect().height > 200)
-      .map(el => ({ el, side: 'top' }));
-    const foot = document.querySelector('footer');
-    if (foot) edges.push({ el: foot, side: 'top' });
-    const box = document.querySelector('#bp-hero .bph-box');
-    if (box) edges.push({ el: box, side: 'bottom' });
-    const S = edges.map(e => ({ ...e, disp: 0, vel: 0, at: .5, grab: false, y: 0, x1: 0, x2: 0 }));
-    // Nothing runs while the strings rest (they are invisible then): a string only
-    // shows, and the loop only runs, from the moment the cursor catches one until
-    // it has stopped vibrating.
-    const measure = () => {
-      for (const s of S) {
-        const r = s.el.getBoundingClientRect();
-        s.y = s.side === 'top' ? r.top : r.bottom - 1;
-        s.x1 = r.left + 32; s.x2 = r.right - 32;
-      }
-    };
-    let running = false, lastY = mouse.y;
-    const frame = () => {
-      measure();
+    const P = [];
+    let running = false, last = 0;
+    const frame = now => {
+      const dt = Math.min(32, now - last) / 16.7;
+      last = now;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, innerWidth, innerHeight);
-      let active = false;
-      for (const s of S) {
-        if (!s.grab && !s.disp) continue;
-        const { y, x1, x2 } = s, inX = mouse.x > x1 && mouse.x < x2, d = mouse.y - y;
-        if (s.grab) {
-          // dragged until the cursor slips off
-          if (!inX || Math.abs(d) > 70) s.grab = false;
-          else { s.vel = d - s.disp; s.disp = d; s.at += ((mouse.x - x1) / (x2 - x1) - s.at) * .3; }
-        }
-        if (!s.grab) {
-          s.vel += -.09 * s.disp; s.vel *= .9; s.disp += s.vel;
-          if (Math.abs(s.disp) < .05 && Math.abs(s.vel) < .05) { s.disp = s.vel = 0; continue; }
-        }
-        active = true;
-        const px = x1 + (x2 - x1) * s.at, k = Math.min(1, Math.abs(s.disp) / 40);
+      ctx.lineCap = 'round';
+      for (let i = P.length - 1; i >= 0; i--) {
+        const p = P[i];
+        p.life -= .022 * dt;
+        if (p.life <= 0 || p.y > innerHeight + 20) { P.splice(i, 1); continue; }
+        p.px = p.x; p.py = p.y;
+        p.vy += .32 * dt; p.vx *= .985; p.vy *= .985;
+        p.x += p.vx * dt; p.y += p.vy * dt;
+        // each spark is a short streak along its motion, hot white turning copper as it cools
+        const g = Math.max(0, p.life);
+        ctx.strokeStyle = g > .6 ? `rgba(255,236,214,${g})` : `rgba(224,${120 + g * 80 | 0},${60 + g * 60 | 0},${g})`;
+        ctx.lineWidth = 1.6 * g + .4;
         ctx.beginPath();
-        ctx.moveTo(x1, y);
-        ctx.quadraticCurveTo(px, y + s.disp * 2, x2, y);
-        ctx.strokeStyle = `rgba(101,140,20,${(.15 + k * .65).toFixed(2)})`;
-        ctx.lineWidth = 1.2 + k;
+        ctx.moveTo(p.px - p.vx * 1.5, p.py - p.vy * 1.5);
+        ctx.lineTo(p.x, p.y);
         ctx.stroke();
       }
-      if (active) requestAnimationFrame(frame);
+      if (P.length) requestAnimationFrame(frame);
       else { running = false; ctx.clearRect(0, 0, innerWidth, innerHeight); }
     };
-    // the cursor catches a string when it crosses it
-    let raf = 0;
-    addEventListener('pointermove', () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = 0;
-        const was = lastY;
-        lastY = mouse.y;
-        if (running) return;
-        measure();
-        for (const s of S) {
-          if (s.y < 0 || s.y > innerHeight || mouse.x <= s.x1 || mouse.x >= s.x2) continue;
-          const d = mouse.y - s.y, p = was - s.y;
-          if (Math.sign(d) !== Math.sign(p) && Math.abs(p) < 120) {
-            s.grab = true; s.disp = d; s.vel = 0; s.at = (mouse.x - s.x1) / (s.x2 - s.x1);
-            running = true;
-          }
-        }
-        if (running) requestAnimationFrame(frame);
-      });
-    }, { passive: true });
-  }
-
-  const CARDS = 'main .rounded-2xl.bg-white:not(.py-16), main .rounded-3xl.bg-white, main .rounded-xl.bg-white';
-  function peel() {
-    for (const c of $$(CARDS)) {
-      if (c._bpPeel || skip(c) || c.parentElement.closest(CARDS) || getComputedStyle(c).backgroundImage !== 'none') continue;
-      c._bpPeel = true;
-      c.dataset.bpPeel = '';
-      const st = { s: 0 };
-      const to = s => gsap.to(st, { s, duration: .35, ease: 'power3', overwrite: true, onUpdate: () => c.style.setProperty('--bp-peel', st.s.toFixed(1) + 'px') });
-      c.addEventListener('pointermove', e => {
-        const r = c.getBoundingClientRect();
-        to(Math.max(0, 1 - Math.hypot(r.right - e.clientX, r.bottom - e.clientY) / 240) * 70);
-      });
-      c.addEventListener('pointerleave', () => to(0));
-    }
-  }
-
-  function liquidImages() {
-    const NS = 'http://www.w3.org/2000/svg';
-    const svg = document.createElementNS(NS, 'svg');
-    svg.setAttribute('aria-hidden', 'true');
-    svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden';
-    svg.innerHTML = '<filter id="bp-liquid" x="-5%" y="-5%" width="110%" height="110%">' +
-      '<feTurbulence type="fractalNoise" baseFrequency="0.012 0.03" numOctaves="2" seed="7" result="n"/>' +
-      '<feDisplacementMap in="SourceGraphic" in2="n" scale="0" xChannelSelector="R" yChannelSelector="G"/></filter>';
-    document.body.appendChild(svg);
-    const turb = svg.querySelector('feTurbulence'), disp = svg.querySelector('feDisplacementMap');
-    let cur = null, amt = 0, running = false;
-    const t0 = performance.now();
-    const loop = now => {
-      const target = cur ? Math.min(22, mouse.v * 10) : 0;
-      // rises quickly with speed, settles slowly once the cursor stops
-      amt += (target - amt) * (target > amt ? .25 : .06);
-      mouse.v *= .9;
-      const f = (now - t0) / 1000;
-      disp.setAttribute('scale', amt.toFixed(2));
-      turb.setAttribute('baseFrequency', `${(.012 + Math.sin(f) * .002).toFixed(4)} ${(.03 + Math.cos(f * .8) * .004).toFixed(4)}`);
-      // the cursor may have left for the chat iframe or the desktop without a pointermove here
-      if (cur && amt < .2 && now - mouse.t > 1200) { cur.removeAttribute('data-bp-liquid'); cur = null; }
-      if (amt < .2 && !cur) { running = false; return; }
-      requestAnimationFrame(loop);
-    };
-    // overlays often sit on top of the images and take the pointer events, so
-    // the image under the cursor is found from its box instead
-    const imgs = [];
-    const scan = () => {
-      for (const img of $$('main img')) {
-        const w = img.getBoundingClientRect().width;
-        // full-bleed background art is left alone: nothing to see, a lot to filter
-        if (img._bpLq || skip(img) || w < 240 || w > 1000 || getComputedStyle(img).filter !== 'none') continue;
-        img._bpLq = true;
-        imgs.push(img);
+    addEventListener('pointerdown', e => {
+      if (e.target.closest('input, textarea, select, [contenteditable]')) return;
+      const n = e.target.closest('a, button') ? 26 : 16;
+      for (let i = 0; i < n && P.length < 160; i++) {
+        // mostly upward, fanning out to both sides
+        const a = -Math.PI / 2 + gsap.utils.random(-1.25, 1.25), v = gsap.utils.random(4, 11);
+        P.push({ x: e.clientX, y: e.clientY, px: e.clientX, py: e.clientY, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: gsap.utils.random(.7, 1) });
       }
-    };
-    scan();
-    let raf = 0;
-    addEventListener('pointermove', () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = 0;
-        const hit = imgs.find(img => { const r = img.getBoundingClientRect(); return mouse.x >= r.left && mouse.x <= r.right && mouse.y >= r.top && mouse.y <= r.bottom; }) || null;
-        if (hit === cur) return;
-        if (cur) cur.removeAttribute('data-bp-liquid');
-        cur = hit;
-        if (cur) {
-          cur.dataset.bpLiquid = '';
-          if (!running) { running = true; requestAnimationFrame(loop); }
-        }
-      });
-    }, { passive: true });
-    return scan;
+      if (!running) { running = true; last = performance.now(); requestAnimationFrame(frame); }
+    });
   }
 
-  // which edge of r is nearest to (x, y)
-  const edge = (r, x, y) => {
-    const d = { left: x - r.left, right: r.right - x, top: y - r.top, bottom: r.bottom - y };
-    return Object.keys(d).reduce((a, b) => (d[a] < d[b] ? a : b));
-  };
-  const POS = { left: 'left center', right: 'right center', top: 'center top', bottom: 'center bottom' };
-  const REST = { left: '0% 100%', right: '0% 100%', top: '100% 0%', bottom: '100% 0%' };
-  function directional() {
-    for (const el of $$('main a, main button, nav a')) {
-      if (el._bpDir || skip(el) || el.closest('#bp-hero') || el.matches('.bg-primary-800')) continue;
-      const cs = getComputedStyle(el), r = el.getBoundingClientRect();
-      if (r.height < 28 || r.height > 64 || r.width > 320 || cs.backgroundImage !== 'none' || parseFloat(cs.borderTopWidth) < 1 || !el.textContent.trim()) continue;
-      el._bpDir = true;
-      el.dataset.bpDir = '';
-      el.addEventListener('pointerenter', e => {
-        const side = edge(el.getBoundingClientRect(), e.clientX, e.clientY);
-        // jump (unseen, while empty) to the entry side's resting size, then fill
-        el.style.transition = 'none';
-        el.style.setProperty('--bp-dp', POS[side]);
-        el.style.setProperty('--bp-ds', REST[side]);
-        void el.offsetWidth;
-        el.style.removeProperty('transition');
-        el.style.setProperty('--bp-ds', '100% 100%');
-      });
-      el.addEventListener('pointerleave', e => {
-        const side = edge(el.getBoundingClientRect(), e.clientX, e.clientY);
-        // moving the anchor while full is invisible; then it drains out that side
-        el.style.setProperty('--bp-dp', POS[side]);
-        el.style.setProperty('--bp-ds', REST[side]);
-      });
-    }
+  function wipe() {
+    const panel = document.createElement('div');
+    panel.className = 'bp-wipe';
+    document.body.appendChild(panel);
+    addEventListener('click', e => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const a = e.target.closest('a[href]');
+      if (!a || a.target === '_blank' || a.hasAttribute('download')) return;
+      const url = new URL(a.href, location.href);
+      if (url.origin !== location.origin || (url.pathname === location.pathname && url.search === location.search)) return;
+      // In the replica a link loads a whole new page, which would take the panel
+      // with it before it is seen, so the panel covers the screen first and the
+      // page is opened after. If that is slow it lifts again on its own.
+      e.preventDefault();
+      e.stopPropagation();
+      gsap.timeline()
+        .fromTo(panel, { translate: '0 100%' }, { translate: '0 0%', duration: .45, ease: 'power3.in', onComplete: () => location.assign(url.href) })
+        .to(panel, { translate: '0 -100%', duration: .55, ease: 'power3.out', delay: 1.5 })
+        .set(panel, { translate: '0 100%' });
+    }, true);
+    // coming back with the browser's back button can restore the page with the panel still up
+    addEventListener('pageshow', e => { if (e.persisted) gsap.set(panel, { translate: '0 100%' }); });
   }
 
   let started = false;
   function start() {
     if (started) return;
     started = true;
-    directional();
-    decode();
-    compass();
-    strings();
-    peel();
-    const scanImages = liquidImages();
+    sheen();
+    sparks();
+    wipe();
     let pending = false;
     new MutationObserver(() => {
       if (pending) return;
       pending = true;
       // batched: React can add many nodes in a burst
-      setTimeout(() => { pending = false; directional(); decode(); peel(); scanImages(); }, 400);
+      setTimeout(() => { pending = false; sheen(); }, 400);
     }).observe(document.querySelector('main') || document.body, { childList: true, subtree: true });
   }
   // after theme.js (load + 600ms) and motion.js (load + 900ms)

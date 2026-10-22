@@ -1,5 +1,5 @@
 // Moves purple in the archived raster images (WebP/PNG/JPEG) to the BetterPitch
-// charcoal & electric lime (version 5), the same mapping server.js applies to CSS/HTML
+// graphite & copper (version 6), the same mapping server.js applies to CSS/HTML
 // colours. Only purple pixels change (hue 235-340); skin, greys, black and
 // white stay as they are.
 // Results go to archive/recolored/<file>; the originals are left untouched and
@@ -34,16 +34,16 @@ async function recolorInPage(dataUrl, type) {
     // Soft edges on hue and saturation so there is no visible seam in gradients/photos.
     const w = Math.min(1, Math.max(0, (h - 235) / 15), Math.max(0, (340 - h) / 15)) * Math.min(1, Math.max(0, (s - .08) / .1));
     if (w <= 0) continue;
-    // same mapping as toTheme() in server.js: vivid mid -> lime, dark/muted -> charcoal, light -> lime cream
+    // same mapping as toTheme() in server.js: vivid mid -> copper, dark/muted -> graphite, light -> cream
     const b2 = Math.min(1, Math.max(0, (l - .7) / .15));
     const v = Math.min(1, Math.max(0, (s - .55) / .2)) * Math.min(1, Math.max(0, (l - .42) / .08));
-    const nh = 76 + (Math.min(335, Math.max(240, h)) - 240) * .05, cs = Math.min(s, .5) * .6;
-    const gs = s * .12 + (cs - s * .12) * b2, gl = l * .4 + (l - l * .4) * b2;
-    const vs = Math.min(.95, s * 1.05) + (cs - Math.min(.95, s * 1.05)) * b2, vl = .5 + (l - .45) * .3 + (l - .5 - (l - .45) * .3) * b2;
-    const ns = gs + (vs - gs) * v, nl = gl + (vl - gl) * v;
-    d[i] += (f(0, nh, ns, nl) - d[i]) * w;
-    d[i + 1] += (f(8, nh, ns, nl) - d[i + 1]) * w;
-    d[i + 2] += (f(4, nh, ns, nl) - d[i + 2]) * w;
+    const hs = (hh, ss, ll) => [f(0, hh, ss, ll), f(8, hh, ss, ll), f(4, hh, ss, ll)];
+    const blend = (p, q, t) => p.map((c, k) => c + (q[k] - c) * t);
+    const cream = hs(28, Math.min(s, .45) * .5, l);
+    const out = blend(blend(hs(220, .08, l * .42), cream, b2), blend(hs(24 + (Math.min(335, Math.max(240, h)) - 240) * .05, Math.min(.62, s * .7), .48 + (l - .45) * .3), cream, b2), v);
+    d[i] += (out[0] - d[i]) * w;
+    d[i + 1] += (out[1] - d[i + 1]) * w;
+    d[i + 2] += (out[2] - d[i + 2]) * w;
     changed++;
   }
   if (changed < 50) return null;
