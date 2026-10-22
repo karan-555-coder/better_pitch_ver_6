@@ -1,7 +1,8 @@
 // Scroll-driven motion for version 6 on GSAP + ScrollTrigger (served by
 // server.js from node_modules), on top of theme.js:
 //  - paragraphs fill with ink from top to bottom as they are scrolled through;
-//  - sections sink back as they scroll away, like cards going under a deck.
+//  - sections sink back as they scroll away, like cards going under a deck;
+//  - cards rise in one after another, like the feature chips under the hero.
 // Both are scrubbed with the scroll. The sink only uses transform and opacity,
 // and skips sections that hold sticky or fixed content (a transform would
 // break them).
@@ -40,6 +41,23 @@
     }
   }
 
+  // cards rise in one after another, like the feature chips under the hero
+  const CARDS = 'main .rounded-2xl.bg-white:not(.py-16), main .rounded-3xl.bg-white, main .rounded-2xl[class*="bg-gradient"], main .rounded-xl.bg-white';
+  function cards() {
+    const below = el => { const r = el.getBoundingClientRect(); return r.height > 0 && r.top >= innerHeight; };
+    const list = $$(CARDS).filter(c => {
+      if (skip(c) || !below(c) || c.parentElement.closest(CARDS)) return false;
+      const cs = getComputedStyle(c);
+      return cs.transform === 'none' && cs.translate === 'none' && cs.animationName === 'none';
+    });
+    if (!list.length) return;
+    gsap.set(list, { y: 46, autoAlpha: 0 });
+    ScrollTrigger.batch(list, {
+      start: 'top 92%', once: true,
+      onEnter: batch => gsap.to(batch, { y: 0, autoAlpha: 1, duration: .9, ease: 'power3.out', stagger: .1, clearProps: 'transform,opacity,visibility' }),
+    });
+  }
+
   let started = false;
   function start() {
     if (started) return;
@@ -49,6 +67,7 @@
     if (sc) ScrollTrigger.defaults({ scroller: sc });
     inkFill();
     sink();
+    cards();
     ScrollTrigger.refresh();
   }
   // theme.js starts at load + 600ms; this goes after it

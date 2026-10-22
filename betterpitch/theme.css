@@ -1,5 +1,7 @@
 /* Site-wide BetterPitch look (version 6, graphite & copper), loaded on every
-   page by server.js: brushed metal on dark sections, headings rising from
+   page by server.js: the hero's tile grid and rays carried across the site
+   (lit around the cursor), brushed metal on dark sections, a voice waveform
+   under hovered headings, an orb ring on hovered CTAs, headings rising from
    behind a ledge, images opening like venetian blinds, paragraphs filling with
    ink as they are read, and the styles for the GSAP layers (motion.js,
    interact.js). State is set by theme.js. Colours and motion only: nothing
@@ -12,11 +14,40 @@ main .bg-white.rounded-2xl.py-16{
 
 ::selection{background:#f2cdb0;color:#111215}
 
-/* brushed metal on dark sections: fine vertical grain and a copper light from above (static) */
+/* brushed metal on dark sections: fine vertical grain, copper light and rays from above, as on the hero (static) */
 [data-bp-metal]{
   background-image:
     radial-gradient(70% 45% at 50% 0%,rgba(214,140,90,.14),transparent 70%),
+    repeating-conic-gradient(from 160deg at 50% -8%,transparent 0deg 9deg,rgba(240,196,160,.035) 10deg 12deg,transparent 13deg 22deg),
     repeating-linear-gradient(90deg,rgba(255,255,255,.022) 0 1px,transparent 1px 3px)}
+
+/* the hero's tile grid, carried onto the big panels and dark sections: faint
+   everywhere, lit up around the cursor (--bp-gr grows on hover), and swept by
+   a bloom wave once when the section first comes into view (--bp-ring) */
+@property --bp-gr{syntax:"<length>";inherits:false;initial-value:0px}
+@property --bp-ring{syntax:"<length>";inherits:false;initial-value:-300px}
+[data-bp-grid]{isolation:isolate}
+[data-bp-grid~="rel"]{position:relative}
+[data-bp-grid]::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;border-radius:inherit;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect x='4' y='4' width='40' height='40' rx='10' fill='%23b8733f' fill-opacity='.4'/%3E%3C/svg%3E") center top/48px 48px;
+  -webkit-mask:radial-gradient(circle var(--bp-gr) at var(--bp-mx,50%) var(--bp-my,50%),#000 0,rgba(0,0,0,.4) 45%,transparent 100%),
+    radial-gradient(circle at 50% 30%,transparent calc(var(--bp-ring) - 140px),#000 var(--bp-ring),transparent calc(var(--bp-ring) + 140px)),
+    linear-gradient(rgba(0,0,0,.06),rgba(0,0,0,.06));
+  mask:radial-gradient(circle var(--bp-gr) at var(--bp-mx,50%) var(--bp-my,50%),#000 0,rgba(0,0,0,.4) 45%,transparent 100%),
+    radial-gradient(circle at 50% 30%,transparent calc(var(--bp-ring) - 140px),#000 var(--bp-ring),transparent calc(var(--bp-ring) + 140px)),
+    linear-gradient(rgba(0,0,0,.06),rgba(0,0,0,.06));
+  transition:--bp-gr .45s cubic-bezier(.2,.75,.2,1)}
+[data-bp-grid~="dark"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect x='4' y='4' width='40' height='40' rx='10' fill='white' fill-opacity='.32'/%3E%3C/svg%3E")}
+[data-bp-grid]:hover::before{--bp-gr:260px}
+[data-bp-grid~="bloom"]::before{animation:bpBloom 2.2s cubic-bezier(.25,.6,.3,1) forwards}
+@keyframes bpBloom{from{--bp-ring:-300px}to{--bp-ring:2400px}}
+
+/* a voice waveform plays above a hovered heading, like the hero's demo (above, where
+   the section padding leaves room; the text under a heading sits close) */
+[data-bp-wave]{position:relative}
+[data-bp-wave]:hover::after{content:"";position:absolute;left:var(--bp-wl,calc(50% - 70px));top:-34px;width:140px;height:24px;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 24'%3E%3Cg fill='%23c88456'%3E%3Crect x='3' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='3%3B17%3B7%3B14%3B5%3B14%3B3' dur='0.70s' begin='0.00s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.5%3B3.5%3B8.5%3B5.0%3B9.5%3B5.0%3B10.5' dur='0.70s' begin='0.00s' repeatCount='indefinite'/%3E%3C/rect%3E%3Crect x='13' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='4%3B14%3B6%3B22%3B4%3B11%3B4' dur='0.82s' begin='-0.09s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.0%3B5.0%3B9.0%3B1.0%3B10.0%3B6.5%3B10.0' dur='0.82s' begin='-0.09s' repeatCount='indefinite'/%3E%3C/rect%3E%3Crect x='23' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='3%3B18%3B6%3B14%3B5%3B13%3B3' dur='0.94s' begin='-0.18s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.5%3B3.0%3B9.0%3B5.0%3B9.5%3B5.5%3B10.5' dur='0.94s' begin='-0.18s' repeatCount='indefinite'/%3E%3C/rect%3E%3Crect x='33' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='4%3B12%3B6%3B22%3B4%3B12%3B4' dur='1.06s' begin='-0.27s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.0%3B6.0%3B9.0%3B1.0%3B10.0%3B6.0%3B10.0' dur='1.06s' begin='-0.27s' repeatCount='indefinite'/%3E%3C/rect%3E%3Crect x='43' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='3%3B18%3B6%3B16%3B5%3B12%3B3' dur='0.70s' begin='-0.36s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.5%3B3.0%3B9.0%3B4.0%3B9.5%3B6.0%3B10.5' dur='0.70s' begin='-0.36s' repeatCount='indefinite'/%3E%3C/rect%3E%3Crect x='53' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='4%3B11%3B7%3B21%3B3%3B13%3B4' dur='0.82s' begin='-0.45s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.0%3B6.5%3B8.5%3B1.5%3B10.5%3B5.5%3B10.0' dur='0.82s' begin='-0.45s' repeatCount='indefinite'/%3E%3C/rect%3E%3Crect x='63' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='4%3B18%3B5%3B18%3B5%3B11%3B3' dur='0.94s' begin='-0.54s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.0%3B3.0%3B9.5%3B3.0%3B9.5%3B6.5%3B10.5' dur='0.94s' begin='-0.54s' repeatCount='indefinite'/%3E%3C/rect%3E%3Crect x='73' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='3%3B13%3B7%3B20%3B3%3B14%3B4' dur='1.06s' begin='-0.63s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.5%3B5.5%3B8.5%3B2.0%3B10.5%3B5.0%3B10.0' dur='1.06s' begin='-0.63s' repeatCount='indefinite'/%3E%3C/rect%3E%3Crect x='83' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='4%3B17%3B5%3B20%3B5%3B10%3B3' dur='0.70s' begin='-0.72s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.0%3B3.5%3B9.5%3B2.0%3B9.5%3B7.0%3B10.5' dur='0.70s' begin='-0.72s' repeatCount='indefinite'/%3E%3C/rect%3E%3Crect x='93' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='3%3B15%3B7%3B18%3B4%3B14%3B3' dur='0.82s' begin='-0.81s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.5%3B4.5%3B8.5%3B3.0%3B10.0%3B5.0%3B10.5' dur='0.82s' begin='-0.81s' repeatCount='indefinite'/%3E%3C/rect%3E%3Crect x='103' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='4%3B16%3B5%3B21%3B5%3B8%3B4' dur='0.94s' begin='-0.90s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.0%3B4.0%3B9.5%3B1.5%3B9.5%3B8.0%3B10.0' dur='0.94s' begin='-0.90s' repeatCount='indefinite'/%3E%3C/rect%3E%3Crect x='113' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='3%3B16%3B7%3B16%3B4%3B14%3B3' dur='1.06s' begin='-0.99s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.5%3B4.0%3B8.5%3B4.0%3B10.0%3B5.0%3B10.5' dur='1.06s' begin='-0.99s' repeatCount='indefinite'/%3E%3C/rect%3E%3Crect x='123' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='4%3B15%3B5%3B22%3B4%3B10%3B4' dur='0.70s' begin='-1.08s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.0%3B4.5%3B9.5%3B1.0%3B10.0%3B7.0%3B10.0' dur='0.70s' begin='-1.08s' repeatCount='indefinite'/%3E%3C/rect%3E%3Crect x='133' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='3%3B17%3B7%3B13%3B5%3B14%3B3' dur='0.82s' begin='-1.17s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.5%3B3.5%3B8.5%3B5.5%3B9.5%3B5.0%3B10.5' dur='0.82s' begin='-1.17s' repeatCount='indefinite'/%3E%3C/rect%3E%3C/g%3E%3C/svg%3E") center/100% 100% no-repeat;animation:bpWaveIn .35s ease both}
+@keyframes bpWaveIn{from{opacity:0;scale:.6 .2}}
 
 /* headings rise from behind a ledge: revealed bottom-up while lifting and straightening */
 [data-bp-ledge]{transition:clip-path .95s cubic-bezier(.2,.75,.2,1),translate .95s cubic-bezier(.2,.75,.2,1),rotate .95s cubic-bezier(.2,.75,.2,1)}
@@ -41,7 +72,12 @@ a.bg-primary-800,button.bg-primary-800{transition:box-shadow .35s ease}
 a.bg-primary-800:hover,button.bg-primary-800:hover{
   background-image:conic-gradient(from var(--bp-ang,0deg),#6e4128,#c88456,#8a5232,#e0a77c,#7a4a2e,#c88456,#6e4128);
   text-shadow:0 1px 2px rgba(17,18,21,.45);
-  box-shadow:inset 0 0 0 1px rgba(240,196,160,.5),0 12px 30px -12px rgba(184,115,70,.7)}
+  box-shadow:inset 0 0 0 1px rgba(240,196,160,.5),0 12px 30px -12px rgba(184,115,70,.7);
+  animation:bpOrbRing 1.6s ease-out infinite}
+/* the ring that opens out of the hero's play orb, pulsing out of the hovered button */
+@keyframes bpOrbRing{
+  0%{box-shadow:inset 0 0 0 1px rgba(240,196,160,.5),0 12px 30px -12px rgba(184,115,70,.7),0 0 0 0 rgba(200,132,86,.55)}
+  100%{box-shadow:inset 0 0 0 1px rgba(240,196,160,.5),0 12px 30px -12px rgba(184,115,70,.7),0 0 0 14px rgba(200,132,86,0)}}
 
 /* interact.js: sparks canvas (only drawn while sparks fly) and the page wipe */
 .bp-sparks{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:2147483001}
@@ -49,6 +85,66 @@ a.bg-primary-800:hover,button.bg-primary-800:hover{
   background:linear-gradient(160deg,#1b1d22 0%,#2f3238 55%,#6b4a37 85%,#b8733f 100%)}
 .bp-wipe::after{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,transparent,#e0a77c,transparent)}
 
+/* intro.js: opening animation. html[data-bp-intro] covers the page from the first paint
+   until the overlay is in place (and gives up on its own after 4s if the script fails). */
+html[data-bp-intro]::before{content:"";position:fixed;inset:0;z-index:2147483600;background:#141518;
+  animation:bp-intro-fail .4s 4s forwards}
+@keyframes bp-intro-fail{to{opacity:0;visibility:hidden}}
+.bp-intro{position:fixed;inset:0;z-index:2147483600;display:grid;font-family:var(--font-helvetica),var(--font-inter),sans-serif;place-items:center;cursor:pointer;overflow:hidden}
+.bp-intro-half{position:absolute;left:0;right:0;height:50.5%;background:#141518;
+  transition:translate .85s cubic-bezier(.76,0,.24,1)}
+.bp-intro-top{top:0;background:radial-gradient(60% 90% at 50% 100%,rgba(200,132,86,.16),transparent 70%),#141518}
+.bp-intro-bottom{bottom:0;background:radial-gradient(60% 90% at 50% 0%,rgba(200,132,86,.16),transparent 70%),#141518}
+.bp-intro-logo{position:relative;display:flex;align-items:center;gap:18px;
+  transition:opacity .45s ease,scale .6s cubic-bezier(.2,.7,.2,1),filter .5s ease}
+.bp-intro-mark{width:clamp(52px,8vw,76px);height:auto;overflow:visible;
+  animation:bp-intro-spin 1.4s calc(.1s - var(--bp-t,0s)) cubic-bezier(.2,.7,.2,1) both}
+.bp-intro-ring{fill:none;stroke:#c88456;stroke-width:3;stroke-linecap:round;stroke-dasharray:214;stroke-dashoffset:214;
+  transform-origin:40px 40px;rotate:-90deg;animation:bp-intro-draw .8s calc(.1s - var(--bp-t,0s)) cubic-bezier(.65,0,.35,1) forwards}
+.bp-intro-mark text{fill:#eceae6;font-weight:700;font-size:38px;font-family:inherit;opacity:0;
+  transform-origin:40px 40px;animation:bp-intro-b .5s calc(.55s - var(--bp-t,0s)) cubic-bezier(.2,.9,.3,1.3) forwards}
+.bp-intro-word{display:flex;font-weight:700;font-size:clamp(34px,6vw,60px);line-height:1.1;letter-spacing:-.02em;color:#eceae6;overflow:hidden;padding:.08em 0}
+.bp-intro-pitch{color:#c88456}
+.bp-intro-ch{display:inline-block;translate:0 110%;opacity:0;
+  animation:bp-intro-rise .55s calc(.6s + var(--i) * 45ms - var(--bp-t,0s)) cubic-bezier(.2,.8,.2,1) forwards,
+            bp-intro-shine .5s calc(1.35s + var(--i) * 40ms - var(--bp-t,0s)) ease}
+.bp-intro-line{position:absolute;left:50%;top:50%;width:min(70vw,520px);height:1px;margin:clamp(46px,6vw,64px) 0 0;translate:-50% 0;scale:0 1;
+  background:linear-gradient(90deg,transparent,#e0a77c,transparent);animation:bp-intro-line .7s calc(1s - var(--bp-t,0s)) cubic-bezier(.65,0,.35,1) forwards;
+  transition:opacity .3s ease}
+@keyframes bp-intro-draw{to{stroke-dashoffset:0}}
+@keyframes bp-intro-spin{from{rotate:-120deg;scale:.7}}
+@keyframes bp-intro-b{from{opacity:0;scale:.4}to{opacity:1;scale:1}}
+@keyframes bp-intro-rise{to{translate:0 0;opacity:1}}
+@keyframes bp-intro-shine{50%{color:#fff3e6;text-shadow:0 0 18px rgba(224,167,124,.85)}}
+@keyframes bp-intro-line{to{scale:1 1}}
+/* opening: the logo grows and fades, then the two halves slide apart */
+.bp-intro-open{pointer-events:none}
+.bp-intro-open .bp-intro-logo{opacity:0;scale:1.12;filter:blur(4px)}
+.bp-intro-open .bp-intro-line{opacity:0}
+.bp-intro-open .bp-intro-top{translate:0 -100%;transition-delay:.12s}
+.bp-intro-open .bp-intro-bottom{translate:0 100%;transition-delay:.12s}
+
+/* play.js: the copper globe behind the dark platform heading (drag to spin) */
+.bp-globe{position:absolute;pointer-events:none}
+.bp-globe-platform{left:50%;top:-10px;width:min(700px,76%);aspect-ratio:1;translate:-50% 0;opacity:.95;
+  -webkit-mask:linear-gradient(180deg,#000 72%,transparent 96%);mask:linear-gradient(180deg,#000 72%,transparent 96%)}
+.bp-globe-grab{cursor:grab}
+.bp-globe-dragging,.bp-globe-dragging *{cursor:grabbing!important;user-select:none}
+/* play.js: 3D cards lift, with a copper glare that follows the cursor */
+[data-bp-glare]{background-image:radial-gradient(circle at var(--bp-gx,50%) var(--bp-gy,50%),rgba(224,167,124,.2),transparent 55%);
+  background-size:100% 100%;background-repeat:no-repeat}
+[data-bp-glare]:not([data-bp-lift]){background-image:none}
+[data-bp-lift]{box-shadow:0 22px 44px -22px rgba(17,18,21,.35),0 0 0 1px rgba(200,132,86,.18);transition:box-shadow .35s ease}
+/* play.js: the copper ring trailing the cursor */
+.bp-cursor,.bp-cursor-dot{position:fixed;left:0;top:0;pointer-events:none;z-index:2147483500;opacity:0;transition:opacity .3s ease}
+html[data-bp-cursor] .bp-cursor,html[data-bp-cursor] .bp-cursor-dot{opacity:1}
+.bp-cursor{width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;border:1.5px solid rgba(200,132,86,.8);will-change:transform}
+.bp-cursor::after{content:"";position:absolute;inset:-1.5px;border-radius:50%;background:rgba(224,167,124,.18);scale:0;transition:scale .3s cubic-bezier(.2,.8,.2,1.3)}
+.bp-cursor-link::after{scale:1.7}
+.bp-cursor-down::after{scale:.8;background:rgba(224,167,124,.35)}
+.bp-cursor-dot{width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:#b8733f;box-shadow:0 0 8px rgba(224,167,124,.8)}
+
 @media (prefers-reduced-motion:reduce){
   [data-bp-ledge],[data-bp-blinds]{transition:none}
+  [data-bp-grid]::before,a.bg-primary-800:hover,button.bg-primary-800:hover{animation:none}
 }

@@ -31,9 +31,12 @@ again. Changes to files in `betterpitch/` only need a page refresh
 | Hero | `betterpitch/hero.js`, `hero.css` | Adds the voice-demo hero as the first section of the home page |
 | Colours | `recolor()` in `server.js` | Moves every purple/violet/magenta colour (hue 240-335) in CSS, HTML, JS, SVG and RSC data to graphite and copper: vivid mid shades become copper, dark and muted ones a cool graphite grey, light ones a warm cream (mixed in RGB, alpha kept); ivory backgrounds become a soft warm grey-white, and the amber/pink stops of the heading gradient become light and deep copper |
 | Images | `recolor-images.js` -> `archive/recolored/` | Same purple-to-graphite/copper mapping on the pixels of the WebP/PNG/JPEG images; `server.js` serves the recoloured copy when one exists |
-| Motion | `betterpitch/theme.css`, `theme.js`, `hero.css` | Hero with slow copper light rays turning from above and a copper glow breathing at its foot; brushed metal on dark sections; headings rising from behind a ledge; images opening like venetian blinds; brushed-copper buttons on hover; gradient edges on the big white panels |
-| GSAP motion | `betterpitch/motion.js` (GSAP + ScrollTrigger from `node_modules`) | Paragraphs fill with ink from top to bottom as they are scrolled through; sections sink back (scale and fade) as they scroll away, like cards going under a deck |
+| Opening animation | `betterpitch/intro.js` (styles in `theme.css`) | A graphite screen covers the site as it loads, a copper ring draws itself around a "B", the BetterPitch wordmark rises letter by letter with a copper shine, then the screen splits open to show the page. Plays on every full load of the home page and once per tab elsewhere; a click skips it |
+| Intro | `betterpitch/intro.js` | Opening animation: a graphite screen, a copper ring drawing itself around a "B", the BetterPitch wordmark rising letter by letter with a copper shine, then the screen splitting open (every load of the home page, once per tab elsewhere; a click skips it) |
+| Motion | `betterpitch/theme.css`, `theme.js`, `hero.css` | Hero with slow copper light rays and a breathing copper glow; the hero's tile grid carried onto the big panels, dark sections and footer, lit up around the cursor and swept by a bloom wave when a section arrives; rays and brushed metal on dark sections; a voice waveform above hovered headings; an orb ring pulsing out of hovered CTAs; headings rising from behind a ledge; images opening like venetian blinds; brushed-copper buttons |
+| GSAP motion | `betterpitch/motion.js` (GSAP + ScrollTrigger from `node_modules`) | Paragraphs fill with ink from top to bottom as they are scrolled through; sections sink back (scale and fade) as they scroll away, like cards going under a deck; cards rise in one after another |
 | Interactions | `betterpitch/interact.js` | The copper sheen on a hovered button turns with the cursor like light on brushed metal, clicks throw copper sparks that arc down under gravity, internal links wipe a graphite-and-copper panel across the screen before the next page opens |
+| 3D & playful | `betterpitch/play.js` (styles in `theme.css`) | A dotted copper globe turns behind the dark "platform" heading with calls arcing between cities and pinging where they land (drag to spin, click for a burst of calls); cards tilt in 3D towards the cursor with a copper glare and their icon flips like a coin; magnetic buttons that wobble like jelly when pressed; a copper ring trailing the cursor; the floating chips in the closing call-to-action drift in 3D depth with the cursor |
 
 Colour replacements in HTML and RSC payloads keep the exact byte length:
 Next.js embeds length-prefixed RSC rows, and a mismatch breaks hydration.
@@ -68,7 +71,7 @@ are `overflow: hidden`), so the scripts scroll that element (`scroller.js`).
 ## Files
 
 - `server.js` – replays `archive/` on localhost, injects the `betterpitch/` layers and recolours on the fly
-- `betterpitch/` – BetterPitch copy, hero, theme and motion (`motion.js` and `interact.js` use GSAP, installed by `npm install`)
+- `betterpitch/` – BetterPitch copy, hero, theme and motion (`motion.js`, `interact.js` and `play.js` use GSAP, installed by `npm install`)
 - `recolor-images.js` – recolours purple in the archived images
 - `capture.js` – records the live site into `archive/` (headless Chrome)
 - `verify.js` / `compare.js` – check the local copy page by page / against the live site
