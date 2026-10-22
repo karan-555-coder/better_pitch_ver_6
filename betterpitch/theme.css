@@ -1,11 +1,7 @@
 /* Site-wide BetterPitch look (version 6, graphite & copper), loaded on every
-   page by server.js: the hero's tile grid and rays carried across the site
-   (lit around the cursor), brushed metal on dark sections, a voice waveform
-   under hovered headings, an orb ring on hovered CTAs, headings rising from
-   behind a ledge, images opening like venetian blinds, paragraphs filling with
-   ink as they are read, and the styles for the GSAP layers (motion.js,
-   interact.js). State is set by theme.js. Colours and motion only: nothing
-   here changes layout. Anything that loops only touches opacity or transforms. */
+   page by server.js: brushed metal on dark sections, copper buttons on hover, the opening logo animation
+   (intro.js) and the globe (play.js). State is set by theme.js. Colours and
+   motion only: nothing here changes layout. */
 
 /* the big white panels fade in from the grey-white page instead of starting on a hard edge */
 main .bg-white.rounded-2xl.py-16{
@@ -21,69 +17,9 @@ main .bg-white.rounded-2xl.py-16{
     repeating-conic-gradient(from 160deg at 50% -8%,transparent 0deg 9deg,rgba(240,196,160,.035) 10deg 12deg,transparent 13deg 22deg),
     repeating-linear-gradient(90deg,rgba(255,255,255,.022) 0 1px,transparent 1px 3px)}
 
-/* the hero's tile grid, carried onto the big panels and dark sections: faint
-   everywhere, lit up around the cursor (--bp-gr grows on hover), and swept by
-   a bloom wave once when the section first comes into view (--bp-ring) */
-@property --bp-gr{syntax:"<length>";inherits:false;initial-value:0px}
-@property --bp-ring{syntax:"<length>";inherits:false;initial-value:-300px}
-[data-bp-grid]{isolation:isolate}
-[data-bp-grid~="rel"]{position:relative}
-[data-bp-grid]::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;border-radius:inherit;
-  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect x='4' y='4' width='40' height='40' rx='10' fill='%23b8733f' fill-opacity='.4'/%3E%3C/svg%3E") center top/48px 48px;
-  -webkit-mask:radial-gradient(circle var(--bp-gr) at var(--bp-mx,50%) var(--bp-my,50%),#000 0,rgba(0,0,0,.4) 45%,transparent 100%),
-    radial-gradient(circle at 50% 30%,transparent calc(var(--bp-ring) - 140px),#000 var(--bp-ring),transparent calc(var(--bp-ring) + 140px)),
-    linear-gradient(rgba(0,0,0,.06),rgba(0,0,0,.06));
-  mask:radial-gradient(circle var(--bp-gr) at var(--bp-mx,50%) var(--bp-my,50%),#000 0,rgba(0,0,0,.4) 45%,transparent 100%),
-    radial-gradient(circle at 50% 30%,transparent calc(var(--bp-ring) - 140px),#000 var(--bp-ring),transparent calc(var(--bp-ring) + 140px)),
-    linear-gradient(rgba(0,0,0,.06),rgba(0,0,0,.06));
-  transition:--bp-gr .45s cubic-bezier(.2,.75,.2,1)}
-[data-bp-grid~="dark"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect x='4' y='4' width='40' height='40' rx='10' fill='white' fill-opacity='.32'/%3E%3C/svg%3E")}
-[data-bp-grid]:hover::before{--bp-gr:260px}
-[data-bp-grid~="bloom"]::before{animation:bpBloom 2.2s cubic-bezier(.25,.6,.3,1) forwards}
-@keyframes bpBloom{from{--bp-ring:-300px}to{--bp-ring:2400px}}
-
-/* a voice waveform plays above a hovered heading, like the hero's demo (above, where
-   the section padding leaves room; the text under a heading sits close) */
-[data-bp-wave]{position:relative}
-[data-bp-wave]:hover::after{content:"";position:absolute;left:var(--bp-wl,calc(50% - 70px));top:-34px;width:140px;height:24px;pointer-events:none;
-  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 24'%3E%3Cg fill='%23c88456'%3E%3Crect x='3' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='3%3B17%3B7%3B14%3B5%3B14%3B3' dur='0.70s' begin='0.00s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.5%3B3.5%3B8.5%3B5.0%3B9.5%3B5.0%3B10.5' dur='0.70s' begin='0.00s' repeatCount='indefinite'/%3E%3C/rect%3E%3Crect x='13' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='4%3B14%3B6%3B22%3B4%3B11%3B4' dur='0.82s' begin='-0.09s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.0%3B5.0%3B9.0%3B1.0%3B10.0%3B6.5%3B10.0' dur='0.82s' begin='-0.09s' repeatCount='indefinite'/%3E%3C/rect%3E%3Crect x='23' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='3%3B18%3B6%3B14%3B5%3B13%3B3' dur='0.94s' begin='-0.18s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.5%3B3.0%3B9.0%3B5.0%3B9.5%3B5.5%3B10.5' dur='0.94s' begin='-0.18s' repeatCount='indefinite'/%3E%3C/rect%3E%3Crect x='33' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='4%3B12%3B6%3B22%3B4%3B12%3B4' dur='1.06s' begin='-0.27s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.0%3B6.0%3B9.0%3B1.0%3B10.0%3B6.0%3B10.0' dur='1.06s' begin='-0.27s' repeatCount='indefinite'/%3E%3C/rect%3E%3Crect x='43' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='3%3B18%3B6%3B16%3B5%3B12%3B3' dur='0.70s' begin='-0.36s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.5%3B3.0%3B9.0%3B4.0%3B9.5%3B6.0%3B10.5' dur='0.70s' begin='-0.36s' repeatCount='indefinite'/%3E%3C/rect%3E%3Crect x='53' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='4%3B11%3B7%3B21%3B3%3B13%3B4' dur='0.82s' begin='-0.45s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.0%3B6.5%3B8.5%3B1.5%3B10.5%3B5.5%3B10.0' dur='0.82s' begin='-0.45s' repeatCount='indefinite'/%3E%3C/rect%3E%3Crect x='63' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='4%3B18%3B5%3B18%3B5%3B11%3B3' dur='0.94s' begin='-0.54s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.0%3B3.0%3B9.5%3B3.0%3B9.5%3B6.5%3B10.5' dur='0.94s' begin='-0.54s' repeatCount='indefinite'/%3E%3C/rect%3E%3Crect x='73' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='3%3B13%3B7%3B20%3B3%3B14%3B4' dur='1.06s' begin='-0.63s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.5%3B5.5%3B8.5%3B2.0%3B10.5%3B5.0%3B10.0' dur='1.06s' begin='-0.63s' repeatCount='indefinite'/%3E%3C/rect%3E%3Crect x='83' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='4%3B17%3B5%3B20%3B5%3B10%3B3' dur='0.70s' begin='-0.72s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.0%3B3.5%3B9.5%3B2.0%3B9.5%3B7.0%3B10.5' dur='0.70s' begin='-0.72s' repeatCount='indefinite'/%3E%3C/rect%3E%3Crect x='93' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='3%3B15%3B7%3B18%3B4%3B14%3B3' dur='0.82s' begin='-0.81s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.5%3B4.5%3B8.5%3B3.0%3B10.0%3B5.0%3B10.5' dur='0.82s' begin='-0.81s' repeatCount='indefinite'/%3E%3C/rect%3E%3Crect x='103' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='4%3B16%3B5%3B21%3B5%3B8%3B4' dur='0.94s' begin='-0.90s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.0%3B4.0%3B9.5%3B1.5%3B9.5%3B8.0%3B10.0' dur='0.94s' begin='-0.90s' repeatCount='indefinite'/%3E%3C/rect%3E%3Crect x='113' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='3%3B16%3B7%3B16%3B4%3B14%3B3' dur='1.06s' begin='-0.99s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.5%3B4.0%3B8.5%3B4.0%3B10.0%3B5.0%3B10.5' dur='1.06s' begin='-0.99s' repeatCount='indefinite'/%3E%3C/rect%3E%3Crect x='123' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='4%3B15%3B5%3B22%3B4%3B10%3B4' dur='0.70s' begin='-1.08s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.0%3B4.5%3B9.5%3B1.0%3B10.0%3B7.0%3B10.0' dur='0.70s' begin='-1.08s' repeatCount='indefinite'/%3E%3C/rect%3E%3Crect x='133' y='10' width='4' height='4' rx='2'%3E%3Canimate attributeName='height' values='3%3B17%3B7%3B13%3B5%3B14%3B3' dur='0.82s' begin='-1.17s' repeatCount='indefinite'/%3E%3Canimate attributeName='y' values='10.5%3B3.5%3B8.5%3B5.5%3B9.5%3B5.0%3B10.5' dur='0.82s' begin='-1.17s' repeatCount='indefinite'/%3E%3C/rect%3E%3C/g%3E%3C/svg%3E") center/100% 100% no-repeat;animation:bpWaveIn .35s ease both}
-@keyframes bpWaveIn{from{opacity:0;scale:.6 .2}}
-
-/* headings rise from behind a ledge: revealed bottom-up while lifting and straightening */
-[data-bp-ledge]{transition:clip-path .95s cubic-bezier(.2,.75,.2,1),translate .95s cubic-bezier(.2,.75,.2,1),rotate .95s cubic-bezier(.2,.75,.2,1)}
-[data-bp-ledge="wait"]{clip-path:inset(100% -2% -25% -2%);translate:0 34px;rotate:1.5deg}
-[data-bp-ledge="in"]{clip-path:inset(-15% -2% -25% -2%)}
-
-/* images open like venetian blinds (--bp-slat grows from 0 to the full 26px slat) */
-@property --bp-slat{syntax:"<length>";inherits:false;initial-value:26px}
-[data-bp-blinds]{
-  -webkit-mask:repeating-linear-gradient(180deg,#000 0 var(--bp-slat),transparent var(--bp-slat) 26px);
-  mask:repeating-linear-gradient(180deg,#000 0 var(--bp-slat),transparent var(--bp-slat) 26px);
-  transition:--bp-slat 1.1s cubic-bezier(.65,.05,.25,1),scale 1.4s cubic-bezier(.2,.75,.2,1)}
-[data-bp-blinds="wait"]{--bp-slat:0px;scale:1.04}
-
-/* paragraphs fill with ink as they are read (motion.js scrubs --bp-fill 0% -> 100%) */
-[data-bp-fill]{
-  background-image:linear-gradient(180deg,var(--bp-ink) 0,var(--bp-ink) var(--bp-fill,0%),#aaa49e calc(var(--bp-fill,0%) + 10%));
-  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
-
-/* graphite buttons: brushed copper whose sheen turns with the cursor (interact.js sets --bp-ang) */
-a.bg-primary-800,button.bg-primary-800{transition:box-shadow .35s ease}
-a.bg-primary-800:hover,button.bg-primary-800:hover{
-  background-image:conic-gradient(from var(--bp-ang,0deg),#6e4128,#c88456,#8a5232,#e0a77c,#7a4a2e,#c88456,#6e4128);
-  text-shadow:0 1px 2px rgba(17,18,21,.45);
-  box-shadow:inset 0 0 0 1px rgba(240,196,160,.5),0 12px 30px -12px rgba(184,115,70,.7);
-  animation:bpOrbRing 1.6s ease-out infinite}
-/* the ring that opens out of the hero's play orb, pulsing out of the hovered button */
-@keyframes bpOrbRing{
-  0%{box-shadow:inset 0 0 0 1px rgba(240,196,160,.5),0 12px 30px -12px rgba(184,115,70,.7),0 0 0 0 rgba(200,132,86,.55)}
-  100%{box-shadow:inset 0 0 0 1px rgba(240,196,160,.5),0 12px 30px -12px rgba(184,115,70,.7),0 0 0 14px rgba(200,132,86,0)}}
-
-/* interact.js: sparks canvas (only drawn while sparks fly) and the page wipe */
-.bp-sparks{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:2147483001}
-.bp-wipe{position:fixed;inset:0;z-index:2147483002;pointer-events:none;translate:0 100%;
-  background:linear-gradient(160deg,#1b1d22 0%,#2f3238 55%,#6b4a37 85%,#b8733f 100%)}
-.bp-wipe::after{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,transparent,#e0a77c,transparent)}
+/* graphite buttons turn copper on hover */
+a.bg-primary-800,button.bg-primary-800{transition:background-color .25s ease,box-shadow .25s ease}
+a.bg-primary-800:hover,button.bg-primary-800:hover{background-color:#9a5a36;box-shadow:0 8px 20px -10px rgba(154,90,54,.6)}
 
 /* intro.js: opening animation. html[data-bp-intro] covers the page from the first paint
    until the overlay is in place (and gives up on its own after 4s if the script fails). */
@@ -130,21 +66,14 @@ html[data-bp-intro]::before{content:"";position:fixed;inset:0;z-index:2147483600
   -webkit-mask:linear-gradient(180deg,#000 72%,transparent 96%);mask:linear-gradient(180deg,#000 72%,transparent 96%)}
 .bp-globe-grab{cursor:grab}
 .bp-globe-dragging,.bp-globe-dragging *{cursor:grabbing!important;user-select:none}
-/* play.js: 3D cards lift, with a copper glare that follows the cursor */
-[data-bp-glare]{background-image:radial-gradient(circle at var(--bp-gx,50%) var(--bp-gy,50%),rgba(224,167,124,.2),transparent 55%);
-  background-size:100% 100%;background-repeat:no-repeat}
-[data-bp-glare]:not([data-bp-lift]){background-image:none}
-[data-bp-lift]{box-shadow:0 22px 44px -22px rgba(17,18,21,.35),0 0 0 1px rgba(200,132,86,.18);transition:box-shadow .35s ease}
-/* play.js: the copper ring trailing the cursor */
-.bp-cursor,.bp-cursor-dot{position:fixed;left:0;top:0;pointer-events:none;z-index:2147483500;opacity:0;transition:opacity .3s ease}
-html[data-bp-cursor] .bp-cursor,html[data-bp-cursor] .bp-cursor-dot{opacity:1}
-.bp-cursor{width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;border:1.5px solid rgba(200,132,86,.8);will-change:transform}
-.bp-cursor::after{content:"";position:absolute;inset:-1.5px;border-radius:50%;background:rgba(224,167,124,.18);scale:0;transition:scale .3s cubic-bezier(.2,.8,.2,1.3)}
-.bp-cursor-link::after{scale:1.7}
-.bp-cursor-down::after{scale:.8;background:rgba(224,167,124,.35)}
-.bp-cursor-dot{width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:#b8733f;box-shadow:0 0 8px rgba(224,167,124,.8)}
 
-@media (prefers-reduced-motion:reduce){
-  [data-bp-ledge],[data-bp-blinds]{transition:none}
-  [data-bp-grid]::before,a.bg-primary-800:hover,button.bg-primary-800:hover{animation:none}
-}
+
+/* ---------- small Spline robot in the hero (betterpitch/spline.js) ---------- */
+/* in the gap under the headline, just left of the demo panel (never under it) */
+.bp-spline{position:absolute;left:calc(var(--bp-spline-x,60%) - 284px);bottom:88px;width:290px;height:320px;z-index:0;pointer-events:none;
+  opacity:0;transition:opacity 1.2s ease}
+.bp-spline-on{opacity:1}
+.bp-spline canvas{width:100%!important;height:100%!important;display:block}
+.bp-spline-credit{position:absolute;right:8px;bottom:-22px;pointer-events:auto;font-size:11px;color:rgba(255,255,255,.3)!important}
+.bp-spline-credit:hover{color:rgba(255,255,255,.7)!important}
+@media (max-width:1099px){.bp-spline{display:none}}

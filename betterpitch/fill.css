@@ -1,0 +1,19 @@
+/* Playful stickers in the empty space beside section headings (fill.js).
+   Small copper icons on soft tiles: they pop in when the heading scrolls into
+   view, bob gently, and wiggle when hovered. Wide screens only. */
+.bp-stk-layer{position:absolute;inset:0;z-index:5;pointer-events:none}
+.bp-stk{position:absolute;z-index:1;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:16px;
+  display:grid;place-items:center;pointer-events:auto;cursor:default;
+  background:linear-gradient(145deg,#fbf6f1,#f1e6dc);border:1px solid rgba(154,90,54,.16);
+  box-shadow:0 10px 24px -14px rgba(90,52,30,.45),inset 0 1px 0 #fff;
+  rotate:var(--r,0deg);opacity:0;scale:.4;transition:opacity .5s ease,scale .6s cubic-bezier(.3,1.6,.5,1)}
+.bp-stk-dark{background:linear-gradient(145deg,rgba(255,255,255,.09),rgba(255,255,255,.03));border-color:rgba(224,167,124,.22);
+  box-shadow:0 10px 24px -14px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.08)}
+.bp-stk svg{width:26px;height:26px;fill:none;stroke:#9a5a36;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.bp-stk-dark svg{stroke:#e0a77c}
+.bp-stk.in{opacity:1;scale:1;animation:bp-stk-bob 5s ease-in-out infinite;animation-delay:var(--d,0s)}
+.bp-stk.in:hover{animation:bp-stk-wiggle .55s ease-in-out;scale:1.12}
+@keyframes bp-stk-bob{0%,100%{translate:0 0}50%{translate:0 -7px}}
+@keyframes bp-stk-wiggle{0%,100%{rotate:var(--r,0deg)}25%{rotate:calc(var(--r,0deg) - 12deg)}75%{rotate:calc(var(--r,0deg) + 12deg)}}
+@media (max-width:1199px){.bp-stk{display:none}}
+@media (prefers-reduced-motion:reduce){.bp-stk{transition:none}.bp-stk.in,.bp-stk.in:hover{animation:none}}

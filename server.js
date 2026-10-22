@@ -180,14 +180,17 @@ function send(res, entry) {
     // recorded markup and RSC payloads stay byte-identical.
     // The home page's first section is added the same way (betterpitch/hero.js).
     // The opening logo animation (betterpitch/intro.js) runs first.
+    // Hover and focus polish lives in betterpitch/polish.css.
     // Site-wide background glow and motion (betterpitch/theme.css, theme.js),
-    // plus scroll-driven motion and pointer interactions on GSAP
-    // (betterpitch/motion.js, interact.js), the 3D/playful layer (play.js) and
-    // the Spline 3D robot in the hero (spline.js, an ES module).
-    body = body.replace('</head>', '<link rel="stylesheet" href="/__bp/theme.css"><script src="/__bp/intro.js"></script><script src="/__bp/content.js"></script><script src="/__bp/hero.js"></script><script src="/__bp/theme.js"></script>' +
+    // plus the card entrances on GSAP (betterpitch/motion.js) and the globe
+    // (play.js).
+    body = body.replace('</head>', '<link rel="stylesheet" href="/__bp/theme.css"><link rel="stylesheet" href="/__bp/polish.css"><script src="/__bp/intro.js"></script><script src="/__bp/content.js"></script><script src="/__bp/hero.js"></script><script src="/__bp/theme.js"></script>' +
       '<script src="/__bp/gsap.min.js"></script><script src="/__bp/ScrollTrigger.min.js"></script>' +
-      '<script src="/__bp/motion.js"></script><script src="/__bp/interact.js"></script><script src="/__bp/play.js"></script>' +
-      '<script type="module" src="/__bp/spline.js"></script></head>');
+      '<script src="/__bp/motion.js"></script><script src="/__bp/play.js"></script>' +
+      // small Spline 3D robot in the home page hero (an ES module)
+      '<script type="module" src="/__bp/spline.js"></script>' +
+      // playful stickers beside section headings (styles in fill.css)
+      '<script src="/__bp/fill.js"></script></head>');
   }
   res.writeHead(entry.status, headers);
   res.end(body);
@@ -199,8 +202,9 @@ http.createServer((req, res) => {
   const BP = {
     '/__bp/content.js': 'application/javascript', '/__bp/hero.js': 'application/javascript', '/__bp/hero.css': 'text/css',
     '/__bp/theme.js': 'application/javascript', '/__bp/theme.css': 'text/css', '/__bp/motion.js': 'application/javascript',
-    '/__bp/interact.js': 'application/javascript', '/__bp/intro.js': 'application/javascript',
-    '/__bp/play.js': 'application/javascript', '/__bp/spline.js': 'application/javascript',
+    '/__bp/intro.js': 'application/javascript', '/__bp/play.js': 'application/javascript',
+    '/__bp/polish.css': 'text/css',
+    '/__bp/spline.js': 'application/javascript', '/__bp/fill.js': 'application/javascript', '/__bp/fill.css': 'text/css',
   };
   // GSAP comes from node_modules (CSP only allows scripts from this server)
   const GSAP = { '/__bp/gsap.min.js': 1, '/__bp/ScrollTrigger.min.js': 1 };

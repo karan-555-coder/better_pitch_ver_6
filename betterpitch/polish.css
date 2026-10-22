@@ -1,0 +1,38 @@
+/* Hover and focus polish for version 6 (graphite & copper), loaded on every
+   page by server.js after theme.css. Small, standard touches only: cards
+   lift, client logos come into colour, links underline, arrows nudge, images
+   ease in a little, and keyboard focus gets a copper ring. Nothing here
+   animates on its own or changes layout; lifts use the `translate` property so
+   they never fight the GSAP entrances (which set `transform`). */
+
+/* cards lift slightly and cast a soft shadow */
+main .rounded-2xl.bg-white:not(.py-16),main .rounded-3xl.bg-white,main .rounded-xl.bg-white,main .rounded-2xl[class*="bg-primary-50"]{
+  transition:translate .3s cubic-bezier(.2,.7,.2,1),box-shadow .3s ease}
+main .rounded-2xl.bg-white:not(.py-16):hover,main .rounded-3xl.bg-white:hover,main .rounded-xl.bg-white:hover,main .rounded-2xl[class*="bg-primary-50"]:hover{
+  translate:0 -3px;box-shadow:0 18px 36px -24px rgba(17,18,21,.35),0 0 0 1px rgba(200,132,86,.14)}
+
+/* "As seen in" logos: quiet grey until hovered */
+main img.h-7.w-auto{filter:grayscale(1);opacity:.6;transition:filter .3s ease,opacity .3s ease}
+main img.h-7.w-auto:hover{filter:none;opacity:1}
+
+/* footer links: a copper underline draws in from the left */
+footer a.desktop-body-medium{
+  background:linear-gradient(#e0a77c,#e0a77c) left bottom/0 1px no-repeat;transition:background-size .3s ease,color .2s ease}
+footer a.desktop-body-medium:hover{background-size:100% 1px;color:#f0c4a0}
+
+/* the arrow in a button or pill link nudges forward */
+a.bg-primary-800 svg,main a[class*="rounded-full"] svg:last-child{transition:translate .25s ease}
+a.bg-primary-800:hover svg,main a[class*="rounded-full"]:hover svg:last-child{translate:3px 0}
+
+/* images inside a clipped frame ease in a little on hover */
+main .overflow-hidden.rounded-2xl > img,main .overflow-hidden.rounded-xl > img{transition:scale .6s cubic-bezier(.2,.7,.2,1)}
+main .overflow-hidden.rounded-2xl:hover > img,main .overflow-hidden.rounded-xl:hover > img{scale:1.03}
+
+/* keyboard focus */
+a:focus-visible,button:focus-visible,input:focus-visible,[role="button"]:focus-visible{outline:2px solid #c88456;outline-offset:3px}
+
+@media (prefers-reduced-motion:reduce){
+  main .rounded-2xl,main .rounded-3xl,main .rounded-xl,footer a,a svg,main img{transition:none!important}
+  main .rounded-2xl:hover,main .rounded-3xl:hover,main .rounded-xl:hover{translate:none!important}
+  main .overflow-hidden:hover > img{scale:none!important}
+}
